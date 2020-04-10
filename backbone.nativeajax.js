@@ -44,10 +44,13 @@
         if (xhr.readyState !== 4) return;
 
         var status = xhr.status;
-        var data = getData(options.headers && options.headers.Accept, xhr);
 
         // Check for validity.
         if (isValid(xhr)) {
+          // Only fetch this if request status is valid. Else the response text
+          // can be in an unexpected format. E.g. On Android, it can be "failed"
+          // or "The internet connect appears to be offline".
+          var data = getData(options.headers && options.headers.Accept, xhr);
           if (options.success) options.success(data);
           if (resolve) resolve(data);
         } else {
