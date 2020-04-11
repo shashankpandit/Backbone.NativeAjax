@@ -44,20 +44,31 @@
         if (xhr.readyState !== 4) return;
 
         var status = xhr.status;
+        var error;
 
         // Check for validity.
         if (isValid(xhr)) {
           // Only fetch this if request status is valid. Else the response text
           // can be in an unexpected format. E.g. On Android, it can be "failed"
           // or "The internet connect appears to be offline".
-          var data = getData(options.headers && options.headers.Accept, xhr);
-          if (options.success) options.success(data);
-          if (resolve) resolve(data);
-        } else {
-          var error = new Error('Server responded with a status of ' + status);
-          if (options.error) options.error(xhr, status, error);
-          if (reject) reject(xhr);
+          try {
+            var data = getData(options.headers && options.headers.Accept, xhr);
+
+            if (options.success) options.success(data);
+            if (resolve) resolve(data);
+
+            return;
+          } catch (e) {
+            error = e;
+          }
         }
+
+        if (!error) {
+          error = new Error('Server responded with a status of ' + status);
+        }
+
+        if (options.error) options.error(xhr, status, error);
+        if (reject) reject(xhr);
       }
     };
 
